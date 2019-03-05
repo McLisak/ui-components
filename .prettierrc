@@ -1,0 +1,13 @@
+{
+  "semi": true,
+  "htmlWhitespaceSensitivity": "strict",
+  "singleQuote": true,
+  "overrides": [
+    {
+      "files": "*.html",
+      "options": {
+        "printWidth": 120
+      }
+    }
+  ]
+}

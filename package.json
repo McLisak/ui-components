@@ -1,0 +1,36 @@
+{
+  "name": "mclisak-ui-components",
+  "version": "1.0.0",
+  "description": "",
+  "main": "webpack.dev.js",
+  "scripts": {
+    "start": "webpack-dev-server --config ./webpack.dev.js",
+    "build:dev": "webpack --config ./webpack.dev.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/McLisak/ui-components.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/McLisak/ui-components/issues"
+  },
+  "homepage": "https://github.com/McLisak/ui-components#readme",
+  "devDependencies": {
+    "autoprefixer": "^9.4.10",
+    "clean-webpack-plugin": "^2.0.0",
+    "copy-webpack-plugin": "^5.0.0",
+    "css-loader": "^2.1.0",
+    "eslint": "^5.15.1",
+    "html-webpack-plugin": "^3.2.0",
+    "node-sass": "^4.11.0",
+    "postcss-loader": "^3.0.0",
+    "sass-loader": "^7.1.0",
+    "webpack": "^4.29.6",
+    "webpack-cli": "^3.2.3",
+    "webpack-dev-server": "^3.2.1"
+  }
+}
