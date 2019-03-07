@@ -8,7 +8,7 @@ const fs = require('fs');
 
 const getEntries = () => {
   const result = {
-    index: path.resolve(__dirname, 'src/index.js'),
+    'index': path.resolve(__dirname, 'src/index.js'),
   };
   const exclude = ['assets'];
 
@@ -44,11 +44,12 @@ const getHtmlPlugins = () => {
       new HtmlWebpackPlugin({
         filename: entryName,
         template: path.resolve(__dirname, 'src/' + entryName),
-        chunks: [fileName + '/index'],
-        base: '/' + fileName,
+        chunks: [`${fileName}/index`],
       })
     );
   });
+  console.log(getEntries());
+  console.log(result[1]);
   return result;
 };
 
@@ -79,11 +80,10 @@ module.exports = () => {
     },
     plugins: [
       new CleanWebpackPlugin(),
-      ...getHtmlPlugins(),
       new MiniCssExtractPlugin({
         chunkFilename: '[name].css',
       }),
-      new webpack.HotModuleReplacementPlugin(),
+      ...getHtmlPlugins(),
     ],
   };
 

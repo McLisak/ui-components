@@ -1,8 +1,50 @@
+@import './variables';
+@import './common';
+
 body {
-  margin: 0;
-  padding: 0;
+  color: $not-that-white;
+  background: $dark-blue;
 }
 
-body * {
-  box-sizing: border-box;
+h1 {
+  justify-self: flex-start;
+}
+
+a,
+a:visited,
+a:focus,
+a:hover {
+  color: $not-that-white;
+  text-decoration: none;
+}
+
+a {
+  padding: 15px;
+  background: $green;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2), 0 3px 15px rgba(0, 0, 0, 0.3);
+  transition: background 150ms ease-out;
+  border-radius: 2px;
+  &:hover,
+  &:focus {
+    background: lighten($green, 3);
+  }
+}
+
+ul {
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+  li {
+    margin: 7.5px;
+    flex: 1;
+  }
+  li > a {
+    display: block;
+    white-space: nowrap;
+    text-align: center;
+  }
 }
