@@ -19,6 +19,7 @@ body {
   color: $not-that-white;
   letter-spacing: 8px;
   transform-origin: center;
+  text-align: center;
   &:before {
     content: attr(data-text);
     position: absolute;
@@ -30,6 +31,7 @@ body {
     height: 100%;
     color: transparent;
     text-transform: inherit;
+    text-align: center;
     font-size: inherit;
     font-weight: inherit;
     z-index: -1;
@@ -45,6 +47,9 @@ body {
   from {
     opacity: 0;
     transform: translate(calc(-50% - 3.5px), calc(-50% + 3.5px));
+  }
+  15% {
+    opacity: 0;
   }
   to {
     opacity: 1;

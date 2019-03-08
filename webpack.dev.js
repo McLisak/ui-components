@@ -3,12 +3,11 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 // const CopyWebpackPlugin = require('copy-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const path = require('path');
-const webpack = require('webpack');
 const fs = require('fs');
 
 const getEntries = () => {
   const result = {
-    'index': path.resolve(__dirname, 'src/index.js'),
+    index: path.resolve(__dirname, 'src/index.js'),
   };
   const exclude = ['assets'];
 
@@ -48,8 +47,6 @@ const getHtmlPlugins = () => {
       })
     );
   });
-  console.log(getEntries());
-  console.log(result[1]);
   return result;
 };
 
