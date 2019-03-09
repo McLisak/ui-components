@@ -1,0 +1,55 @@
+@import '../common';
+@import '../variables';
+
+.notification {
+  position: fixed;
+  right: 15px;
+  bottom: 15px;
+  display: flex;
+  background: $green;
+  color: white;
+  pointer-events: all;
+  overflow: hidden;
+  border-radius: 2px;
+  will-change: transform;
+  @include box-shadow(3);
+
+  > div {
+    flex-grow: 1;
+    padding: 0 15px;
+  }
+
+  p {
+    font-weight: 300;
+  }
+
+  > button {
+    border: none;
+    width: 40px;
+    padding: 0;
+    background-color: $pastel-blue;
+    transition: background-color 150ms $ease-out-bezier;
+    position: relative;
+    cursor: pointer;
+    &:before,
+    &:after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 1px;
+      background: white;
+      top: calc(50%);
+      left: 50%;
+    }
+    &:before {
+      transform: translate(-50%, -50%) rotate(45deg);
+    }
+    &:after {
+      transform: translate(-50%, -50%) rotate(-45deg);
+    }
+
+    &:hover {
+      background-color: lighten($pastel-blue, 3);
+    }
+  }
+}
