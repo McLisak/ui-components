@@ -68,17 +68,22 @@ export class Notifications extends EventEmitter {
    * @param {boolean} [dismissable=true] - appends the close button.
    * @returns {Notification} notification
    */
-  addNotification(content, duration = 'default', dismissable = true) {
+  addNotification(content, duration = 'default', dismissable = true, _selfCalled = false) {
     return new Promise((resolve, reject) => {
       if (!content) {
         return reject(new Error(Notifications.ERROR.NO_NOTIFICATION_CONTENT));
       }
       if (this._isBusy) {
-        return this.once(Notifications.EVENT.BUSY_CHANGE, () => {
-          this.addNotification(content, duration, dismissable).then(resolve);
-        });
+        if (!_selfCalled) {
+          const onBusyChange = () => {
+            this.addNotification(content, duration, dismissable, true).then(resolve);
+          };
+          this.once(Notifications.EVENT.BUSY_CHANGE, onBusyChange);
+        }
+        return;
       }
       this._setBusy(true);
+
       const id = ++this.lastNotificationId;
       const $notification = document.createElement('div');
       $notification.classList.add('notification');
@@ -134,16 +139,21 @@ export class Notifications extends EventEmitter {
    * Removes the notification. Can be used `on the fly` and is used internally.
    * @param {number} removeId - id of notification to be removed.
    */
-  removeNotification(removeId) {
+  removeNotification(removeId, _selfCalled = false) {
     return new Promise((resolve) => {
       if (this._isBusy) {
-        return this.once(Notifications.EVENT.BUSY_CHANGE, () => {
-          this.removeNotification(removeId).then(resolve);
-        });
+        if (!_selfCalled) {
+          const onBusyChange = () => {
+            this.removeNotification(removeId, true).then(resolve);
+          };
+          this.once(Notifications.EVENT.BUSY_CHANGE, onBusyChange);
+        }
+        return;
       }
       this._setBusy(true);
       const notificationIndex = this.notifications.findIndex(({ id }) => id === removeId);
       const notification = this.notifications[notificationIndex];
+
       window.clearTimeout(notification.timeout);
       notification.show = false;
 
@@ -188,8 +198,7 @@ export class Notifications extends EventEmitter {
       const positionIncrementer = index - ignoredNotificationCount;
       let transformValue;
       if (notification.show) {
-        transformValue =
-          index === 0 ? `0%` : `calc(${positionIncrementer * -100}% - ${positionIncrementer * 10}px)`;
+        transformValue = index === 0 ? `0%` : `calc(${positionIncrementer * -100}% - ${positionIncrementer * 10}px)`;
         $notification.style.opacity = 1;
       } else {
         transformValue = `calc(${positionIncrementer * -100 + 100}% - ${positionIncrementer * 10}px)`;

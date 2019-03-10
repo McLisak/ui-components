@@ -9,7 +9,7 @@ notifications.on('dismiss', (notification) => console.log('dismiss', notificatio
 notifications.addNotification(`Greetings notification! :)`);
 notifications.addNotification(`Greetings notification2! :)`, null);
 setTimeout(() => notifications.addNotification(`New notification incoming`, 4000, false), 2000);
-setTimeout(() => notifications.addNotification(`Another notification incoming`, 1000), 5000);
+setTimeout(() => notifications.addNotification(`Another notification incoming`, 10000), 3000);
 
 const button1 = document.getElementById('button1');
 const button2 = document.getElementById('button2');
