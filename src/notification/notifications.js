@@ -26,8 +26,14 @@ export class Notifications extends EventEmitter {
       NO_NOTIFICATION_CONTENT: 'Specify the notification content',
     };
   }
+
   static get EVENT() {
-    return {};
+    return {
+      BUSY_CHANGE: 'busy-change',
+      ADD: 'add',
+      REMOVE: 'remove',
+      DISMISS: 'dismiss',
+    };
   }
 
   /**
@@ -50,8 +56,7 @@ export class Notifications extends EventEmitter {
         return;
       }
       this._isBusy = state;
-      console.log('Busy Change', state);
-      this.emit('busy-change', this._isBusy);
+      this.emit(Notifications.EVENT.BUSY_CHANGE, this._isBusy);
     }
   }
 
@@ -64,86 +69,64 @@ export class Notifications extends EventEmitter {
    * @returns {Notification} notification
    */
   addNotification(content, duration = 'default', dismissable = true) {
-    if (!content) {
-      throw new Error(Notifications.ERROR.NO_NOTIFICATION_CONTENT);
-    }
-    if (this._isBusy) {
-      this.once('busy-change', () => {
-        return this.addNotification(content, duration, dismissable);
-      });
-      return;
-    }
-    this._setBusy(true);
+    return new Promise((resolve, reject) => {
+      if (!content) {
+        return reject(new Error(Notifications.ERROR.NO_NOTIFICATION_CONTENT));
+      }
+      if (this._isBusy) {
+        return this.once(Notifications.EVENT.BUSY_CHANGE, () => {
+          this.addNotification(content, duration, dismissable).then(resolve);
+        });
+      }
+      this._setBusy(true);
+      const id = ++this.lastNotificationId;
+      const $notification = document.createElement('div');
+      $notification.classList.add('notification');
+      $notification.style.transform = 'translateY(100%)';
+      $notification.style.opacity = '0';
+      const $notificationContent = document.createElement('div');
+      $notificationContent.innerHTML = `<p>${content}</p>`;
+      $notification.appendChild($notificationContent);
 
-    const id = ++this.lastNotificationId;
-    const $notification = document.createElement('div');
-    $notification.classList.add('notification');
-    $notification.style.transform = 'translateY(100%)';
-    $notification.style.opacity = '0';
-    const $notificationContent = document.createElement('div');
-    $notificationContent.innerHTML = `<p>${content}</p>`;
-    $notification.appendChild($notificationContent);
-
-    const notification = {
-      $el: $notification,
-      id,
-      show: true,
-      moving: true,
-    };
-
-    if (dismissable) {
-      const closeButton = document.createElement('button');
-      const onCloseClick = () => {
-        this.removeNotification(id);
-        closeButton.removeEventListener('click', onCloseClick);
+      const notification = {
+        $el: $notification,
+        id,
+        show: true,
+        moving: true,
       };
-      closeButton.addEventListener('click', onCloseClick);
-      $notification.appendChild(closeButton);
-    }
-    if (duration !== null) {
-      if (duration === 'default') {
-        duration = this.duration;
-      }
-      if (typeof duration === 'number') {
-        const onTimeout = () => {
+
+      if (dismissable) {
+        const closeButton = document.createElement('button');
+        const onCloseClick = () => {
+          this.emit(Notifications.EVENT.DISMISS, notification);
           this.removeNotification(id);
+          closeButton.removeEventListener('click', onCloseClick);
         };
-        notification.timeout = window.setTimeout(onTimeout, duration);
+        closeButton.addEventListener('click', onCloseClick);
+        $notification.appendChild(closeButton);
       }
-    }
-
-    this.$container.appendChild($notification);
-    this.notifications.unshift(notification);
-
-    window.requestAnimationFrame(() => this._onAddUpdate());
-
-    return notification;
-  }
-
-  /**
-   * Adjusts the position of all notifications after adding new one
-   */
-  _onAddUpdate() {
-    let ignoredNotificationCount = 0;
-    window.requestAnimationFrame(() => {
-      for (let i = this.notifications.length - 1; i >= 0; i--) {
-        if (!this.notifications[i].show) {
-          ignoredNotificationCount++;
-        } else {
-          const notification = this.notifications[i];
-          notification.moving = true;
-          const $notification = notification.$el;
-          $notification.addEventListener('transitionend', () => {
-            notification.moving = false;
-            this._setBusy(false);
-          });
-          const positionIncrementer = i - ignoredNotificationCount;
-          const transformValue =
-            i === 0 ? `0%` : `calc(${positionIncrementer * -100}% - ${positionIncrementer * 10}px)`;
-          $notification.style.opacity = 1;
-          $notification.style.transform = `translateY(${transformValue})`;
+      if (duration !== null) {
+        if (duration === 'default') {
+          duration = this.duration;
+        }
+        if (typeof duration === 'number') {
+          const onTimeout = () => {
+            this.removeNotification(id);
+          };
+          notification.timeout = window.setTimeout(onTimeout, duration);
         }
       }
+
+      this.$container.appendChild($notification);
+      this.notifications.unshift(notification);
+
+      window.requestAnimationFrame(() =>
+        this._onAddUpdate().then(() => {
+          this._setBusy(false);
+          this.emit(Notifications.EVENT.ADD, notification);
+          resolve(notification);
+        })
+      );
     });
   }
 
@@ -152,20 +135,68 @@ export class Notifications extends EventEmitter {
    * @param {number} removeId - id of notification to be removed.
    */
   removeNotification(removeId) {
-    if (this._isBusy) {
-      this.once('busy-change', () => {
-        this.removeNotification(removeId);
+    return new Promise((resolve) => {
+      if (this._isBusy) {
+        return this.once(Notifications.EVENT.BUSY_CHANGE, () => {
+          this.removeNotification(removeId).then(resolve);
+        });
+      }
+      this._setBusy(true);
+      const notificationIndex = this.notifications.findIndex(({ id }) => id === removeId);
+      const notification = this.notifications[notificationIndex];
+      window.clearTimeout(notification.timeout);
+      notification.show = false;
+
+      this._onRemoveUpdate(notificationIndex).then(() => {
+        this._setBusy(false);
+        this.emit(Notifications.EVENT.REMOVE, notification);
+        resolve(notification);
       });
-      return;
-    }
-    this._setBusy(true);
+    });
+  }
 
-    const notificationIndex = this.notifications.findIndex(({ id }) => id === removeId);
-    const notification = this.notifications[notificationIndex];
-    window.clearTimeout(notification.timeout);
-    notification.show = false;
+  /**
+   * Adjusts the position of all notifications after adding new one
+   */
+  _onAddUpdate() {
+    return new Promise((resolve) => {
+      let ignoredNotificationCount = 0;
+      window.requestAnimationFrame(() => {
+        const promises = [];
+        for (let i = this.notifications.length - 1; i >= 0; i--) {
+          if (!this.notifications[i].show) {
+            ignoredNotificationCount++;
+          } else {
+            promises.push(this._updateSingle(this.notifications[i], i, ignoredNotificationCount));
+          }
+        }
+        Promise.all(promises).then(resolve);
+      });
+    });
+  }
 
-    this._onRemoveUpdate(notificationIndex);
+  _updateSingle(notification, index, ignoredNotificationCount = 0) {
+    return new Promise((resolve) => {
+      notification.moving = true;
+      const $notification = notification.$el;
+      const onTransitionEnd = () => {
+        notification.moving = false;
+        $notification.removeEventListener('transitionend', onTransitionEnd);
+        resolve(notification);
+      };
+      $notification.addEventListener('transitionend', onTransitionEnd);
+      const positionIncrementer = index - ignoredNotificationCount;
+      let transformValue;
+      if (notification.show) {
+        transformValue =
+          index === 0 ? `0%` : `calc(${positionIncrementer * -100}% - ${positionIncrementer * 10}px)`;
+        $notification.style.opacity = 1;
+      } else {
+        transformValue = `calc(${positionIncrementer * -100 + 100}% - ${positionIncrementer * 10}px)`;
+        $notification.style.opacity = 0;
+      }
+      $notification.style.transform = `translateY(${transformValue})`;
+    });
   }
 
   /**
@@ -173,31 +204,25 @@ export class Notifications extends EventEmitter {
    * @param {*} removeIndex
    */
   _onRemoveUpdate(removeIndex) {
-    window.requestAnimationFrame(() => {
-      for (let i = this.notifications.length - 1; i >= removeIndex; i--) {
-        const notification = this.notifications[i];
-        notification.moving = true;
-        const $notification = notification.$el;
-        const onTransitionEnd = () => {
-          notification.moving = false;
-          this._setBusy(false);
+    return new Promise((resolve) => {
+      window.requestAnimationFrame(() => {
+        const promises = [];
+        for (let i = this.notifications.length - 1; i >= removeIndex; i--) {
           if (i === removeIndex) {
-            this.$container.removeChild($notification);
-            $notification.removeEventListener('transitionend', onTransitionEnd);
-            this.notifications.splice(removeIndex, 1);
+            promises.push(
+              this._updateSingle(this.notifications[i], i).then(() => {
+                this.$container.removeChild(this.notifications[i].$el);
+              })
+            );
+          } else {
+            promises.push(this._updateSingle(this.notifications[i], i - 1));
           }
-        };
-        $notification.addEventListener('transitionend', onTransitionEnd);
-
-        let transformValue;
-        if (i === removeIndex) {
-          $notification.style.opacity = 0;
-          transformValue = `calc(${i * -100 + 100}% - ${i * 10}px)`;
-        } else {
-          transformValue = `calc(${(i - 1) * -100}% - ${(i - 1) * 10}px)`;
         }
-        $notification.style.transform = `translateY(${transformValue})`;
-      }
+        return Promise.all(promises).then(() => {
+          this.notifications.splice(removeIndex, 1);
+          resolve();
+        });
+      });
     });
   }
 }
