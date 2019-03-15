@@ -16,7 +16,7 @@
     "indent": ["error", 2],
     "max-len": [
       "warn",
-      { "code": 120, "ignoreUrls": true, "ignoreStrings": true }
+      { "code": 120, "tabWidth": 2, "ignoreUrls": true, "ignoreStrings": true }
     ],
     "arrow-parens": ["error", "always"],
     "no-console": "off"

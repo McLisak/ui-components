@@ -1,3 +1,3 @@
-import './style.scss';
+import { SwipePanes } from './panes';
 
-
+window.panes = new SwipePanes();

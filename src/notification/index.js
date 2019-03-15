@@ -1,6 +1,6 @@
 import { Notifications } from './notifications';
 
-const notifications = new Notifications({});
+const notifications = new Notifications();
 notifications.on('busy-change', (isBusy) => console.log('isBusy', isBusy));
 notifications.on('add', (notification) => console.log('add', notification));
 notifications.on('remove', (notification) => console.log('remove', notification));

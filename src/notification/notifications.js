@@ -39,7 +39,7 @@ export class Notifications extends EventEmitter {
   /**
    * @param {NotificationsConfig} config
    */
-  constructor(config) {
+  constructor(config = {}) {
     super();
     this.$container = config.container || document.body;
     this.duration = config.duration || 5000;
