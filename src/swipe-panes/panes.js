@@ -14,6 +14,11 @@ const clip = (min, max, value) => {
 };
 
 export class SwipePanes extends EventEmitter {
+  static get EVENT() {
+    return {
+      CHANGE: 'change',
+    };
+  }
   constructor(config = {}) {
     super();
     /**
@@ -101,6 +106,7 @@ export class SwipePanes extends EventEmitter {
     if (this.moveX === 0) {
       return;
     }
+    const beforeChangeIndex = this.currentPaneIndex;
     if (diff > this.switchThreshold) {
       // Transition to next (right)
       this.currentPaneIndex = Math.min(this.panes.length, ++this.currentPaneIndex);
@@ -118,6 +124,9 @@ export class SwipePanes extends EventEmitter {
     const onTransitionEnd = () => {
       this.isAnimating = false;
       this.removeTransition();
+      if (beforeChangeIndex !== this.currentPaneIndex) {
+        this.emit(SwipePanes.EVENT.CHANGE, this.currentPaneIndex, beforeChangeIndex);
+      }
       this.currentPane.removeEventListener('transitionend', onTransitionEnd);
     };
 

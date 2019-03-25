@@ -1,6 +1,15 @@
 import EventEmitter from 'eventemitter3';
 import './style.scss';
 
+const debounce = (fn, delay) => {
+  let timeout;
+  return function() {
+    const fnApply = () => fn.apply(this, arguments);
+    clearTimeout(timeout);
+    timeout = setTimeout(fnApply, delay);
+  };
+};
+
 /**
  * @typedef {{
  * container: HTMLElement,
@@ -47,6 +56,12 @@ export class Notifications extends EventEmitter {
     this.lastNotificationId = 0;
     this.notifications = [];
     this._isBusy = false;
+    this._onResize = this._onResize.bind(this);
+    window.addEventListener('resize', debounce(this._onResize, 150));
+  }
+
+  _onResize() {
+    this._onAddUpdate();
   }
 
   _setBusy(state) {
@@ -68,7 +83,7 @@ export class Notifications extends EventEmitter {
    * @param {boolean} [dismissable=true] - appends the close button.
    * @returns {Notification} notification
    */
-  addNotification(content, duration = 'default', dismissable = true, _selfCalled = false) {
+  add(content, duration = 'default', dismissable = true, _selfCalled = false) {
     return new Promise((resolve, reject) => {
       if (!content) {
         return reject(new Error(Notifications.ERROR.NO_NOTIFICATION_CONTENT));
@@ -76,7 +91,7 @@ export class Notifications extends EventEmitter {
       if (this._isBusy) {
         if (!_selfCalled) {
           const onBusyChange = () => {
-            this.addNotification(content, duration, dismissable, true).then(resolve);
+            this.add(content, duration, dismissable, true).then(resolve);
           };
           this.once(Notifications.EVENT.BUSY_CHANGE, onBusyChange);
         }
@@ -104,7 +119,7 @@ export class Notifications extends EventEmitter {
         const closeButton = document.createElement('button');
         const onCloseClick = () => {
           this.emit(Notifications.EVENT.DISMISS, notification);
-          this.removeNotification(id);
+          this.remove(id);
           closeButton.removeEventListener('click', onCloseClick);
         };
         closeButton.addEventListener('click', onCloseClick);
@@ -116,7 +131,7 @@ export class Notifications extends EventEmitter {
         }
         if (typeof duration === 'number') {
           const onTimeout = () => {
-            this.removeNotification(id);
+            this.remove(id);
           };
           notification.timeout = window.setTimeout(onTimeout, duration);
         }
@@ -139,12 +154,12 @@ export class Notifications extends EventEmitter {
    * Removes the notification. Can be used `on the fly` and is used internally.
    * @param {number} removeId - id of notification to be removed.
    */
-  removeNotification(removeId, _selfCalled = false) {
+  remove(removeId, _selfCalled = false) {
     return new Promise((resolve) => {
       if (this._isBusy) {
         if (!_selfCalled) {
           const onBusyChange = () => {
-            this.removeNotification(removeId, true).then(resolve);
+            this.remove(removeId, true).then(resolve);
           };
           this.once(Notifications.EVENT.BUSY_CHANGE, onBusyChange);
         }
@@ -170,22 +185,20 @@ export class Notifications extends EventEmitter {
    */
   _onAddUpdate() {
     return new Promise((resolve) => {
-      let ignoredNotificationCount = 0;
+      let translateValue = 0;
       window.requestAnimationFrame(() => {
         const promises = [];
-        for (let i = this.notifications.length - 1; i >= 0; i--) {
-          if (!this.notifications[i].show) {
-            ignoredNotificationCount++;
-          } else {
-            promises.push(this._updateSingle(this.notifications[i], i, ignoredNotificationCount));
-          }
+        for (let i = 0; i < this.notifications.length; i++) {
+          const notification = this.notifications[i];
+          promises.push(this._updateSingle(notification, translateValue));
+          translateValue += notification.$el.clientHeight + 10;
         }
         Promise.all(promises).then(resolve);
       });
     });
   }
 
-  _updateSingle(notification, index, ignoredNotificationCount = 0) {
+  _updateSingle(notification, translateValue) {
     return new Promise((resolve) => {
       notification.moving = true;
       const $notification = notification.$el;
@@ -195,16 +208,16 @@ export class Notifications extends EventEmitter {
         resolve(notification);
       };
       $notification.addEventListener('transitionend', onTransitionEnd);
-      const positionIncrementer = index - ignoredNotificationCount;
-      let transformValue;
+      let transform;
+
       if (notification.show) {
-        transformValue = index === 0 ? `0%` : `calc(${positionIncrementer * -100}% - ${positionIncrementer * 10}px)`;
+        transform = `-${translateValue}px`;
         $notification.style.opacity = 1;
       } else {
-        transformValue = `calc(${positionIncrementer * -100 + 100}% - ${positionIncrementer * 10}px)`;
+        transform = `calc(100% - ${translateValue}px)`;
         $notification.style.opacity = 0;
       }
-      $notification.style.transform = `translateY(${transformValue})`;
+      $notification.style.transform = `translateY(${transform})`;
     });
   }
 
@@ -214,18 +227,22 @@ export class Notifications extends EventEmitter {
    */
   _onRemoveUpdate(removeIndex) {
     return new Promise((resolve) => {
+      let translateValue = 0;
       window.requestAnimationFrame(() => {
         const promises = [];
-        for (let i = this.notifications.length - 1; i >= removeIndex; i--) {
+        for (let i = 0; i < this.notifications.length; i++) {
           if (i === removeIndex) {
             promises.push(
-              this._updateSingle(this.notifications[i], i).then(() => {
+              this._updateSingle(this.notifications[i], translateValue, i).then(() => {
                 this.$container.removeChild(this.notifications[i].$el);
               })
             );
-          } else {
-            promises.push(this._updateSingle(this.notifications[i], i - 1));
+            continue;
           }
+          if (i > removeIndex) {
+            promises.push(this._updateSingle(this.notifications[i], translateValue, i));
+          }
+          translateValue += this.notifications[i].$el.clientHeight + 10;
         }
         return Promise.all(promises).then(() => {
           this.notifications.splice(removeIndex, 1);
