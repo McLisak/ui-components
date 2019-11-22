@@ -1,0 +1,58 @@
+// Local variables
+.side-menu-trigger-container {
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  @include layer(m-trigger);
+  &:focus,
+  &:active {
+    outline: none;
+    background: transparent;
+  }
+}
+
+// Defaults
+.side-menu-trigger {
+  position: relative;
+  width: $trigger-size;
+  height: $trigger-size;
+  padding: $trigger-size/5;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+  cursor: pointer;
+  border-radius: $trigger-border-radius;
+  background: $teal;
+  color: $white;
+  @include shadow(3);
+  &:before,
+  span#{&}-icon,
+  &:after {
+    content: '';
+    display: block;
+    position: relative;
+    background: $white;
+    visibility: visible;
+    width: 100%;
+    height: 2px;
+    transition: transform 200ms $bezier-deceleration;
+  }
+  &:focus {
+    outline: none;
+  }
+  body.side-menu-open & {
+    span {
+      visibility: hidden;
+    }
+    &:before {
+      // top: $trigger-size/5;
+      transform: translateY($trigger-size/5) rotate(135deg);
+    }
+    &:after {
+      transform: translateY(-$trigger-size/5) rotate(-135deg);
+    }
+  }
+}
+
+// Color variants

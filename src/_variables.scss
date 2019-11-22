@@ -1,11 +1,30 @@
+// Colors
 $not-that-white: #fafafa;
 $dark-blue: #182a35;
 $flat-green: #1b583a;
-
 $pastel-blue: #286ec9;
 $pastel-red: #df4444;
 $pastel-pink: #f056ab;
-
+$white: #fafafa;
+$light-grey: #e0e0e0;
+$blue-grey: #607d8b;
+$black: #0a0a0a;
+$teal: #009688;
+$pink: #e91e63;
+$red: #f44336;
+$purple: #9c27b0;
+$deep-purple: #673ab7;
+$indigo: #3f51b5;
+$blue: #2196f3;
+$light-blue: #03a9f4;
+$cyan: #00bcd4;
+$green: #4caf50;
+$orange: #ff9800;
+// Beziers
+$bezier-standard: cubic-bezier(0.4, 0, 0.2, 1);
+$bezier-deceleration: cubic-bezier(0, 0, 0.2, 1);
+$bezier-acceleration: cubic-bezier(0.4, 0, 1, 1);
+$bezier-sharp: cubic-bezier(0.4, 0, 0.6, 1);
 $ease-out-bezier: cubic-bezier(0.25, 0.8, 0.25, 1);
 
 @mixin box-shadow($depth: 1) {

@@ -1,0 +1,87 @@
+$background: $white;
+.side-menu {
+  position: fixed;
+  width: 100%;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  overflow: visible;
+  display: block;
+  @include layer(m-container);
+  padding: 15px 30px;
+  background: $background;
+  transform: translateX(-100%);
+  transition: transform 200ms $bezier-acceleration;
+  %selection {
+    background: $teal;
+    color: $white;
+  }
+  ::selection {
+    @extend %selection;
+  }
+  &:after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    @include shadow(5);
+    opacity: 0;
+    transition: opacity 100ms $bezier-acceleration;
+  }
+  body.side-menu-open & {
+    transition: transform 300ms $bezier-deceleration;
+    transform: translateX(0%);
+    &:after {
+      opacity: 1;
+    }
+  }
+  #{&}-wrapper {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: auto;
+    @include layer(m-wrapper);
+  }
+  p {
+    text-align: center;
+    height: $trigger-size;
+    margin: 0;
+    line-height: $trigger-size;
+    font-size: 1.4rem;
+  }
+  ul {
+    list-style: none;
+    margin: 1.1rem 0 0 0;
+    padding: 0;
+    display: block;
+    flex-direction: column;
+    position: relative;
+    li {
+      display: block;
+    }
+    a {
+      display: block;
+      text-decoration: none;
+      color: $black;
+      font-size: 1rem;
+      padding: 0.6rem 0;
+      border-top: 1px solid darken($background, 7%);
+      transition: color 200ms $bezier-sharp;
+      @if (lightness($background) < 40) {
+        border-color: lighten($background, 7%);
+      }
+      &:hover,
+      &:active,
+      &:focus {
+        color: $teal;
+        outline: none;
+        text-decoration: none;
+      }
+    }
+  }
+  @include device(tablet) {
+    width: 500px;
+  }
+}
