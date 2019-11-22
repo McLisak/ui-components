@@ -24,7 +24,7 @@ h3 {
 
 .btn {
   padding: 15px;
-  background-color: $green;
+  background-color: $flat-green;
   color: white;
   cursor: pointer;
   display: block;
@@ -37,7 +37,7 @@ h3 {
   font-weight: 300;
   &:hover,
   &:focus {
-    background-color: lighten($green, 3);
+    background-color: lighten($flat-green, 3);
   }
 }
 

@@ -1,0 +1,49 @@
+@import '../common';
+@import '../variables';
+
+.hover-ripple {
+  display: block;
+  position: relative;
+  font-size: 20px;
+  padding: 0.8em;
+  background: $pastel-blue;
+  color: white;
+  text-decoration: none;
+  @include box-shadow(2);
+  overflow: hidden;
+  z-index: 1;
+  margin: 7.5px;
+  text-shadow: 1px 2px 3px rgba(0, 0, 0, 0.5);
+  transition: transform 50ms ease-out;
+
+  > .ripple {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    padding: 50% 0;
+    z-index: -1;
+    transform: translate(-50%, -50%) scale(0);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .ripple-hover {
+    transition: transform 200ms ease-out;
+    background: $pastel-pink;
+    box-shadow: 0 0 10px 5px $pastel-pink;
+  }
+  .ripple-click {
+    $background: rgba(255, 255, 255, 0.3);
+    opacity: 1;
+    transition: transform 200ms ease-out, opacity 500ms ease-in;
+    background: $background;
+    box-shadow: 0 0 10px 5px $background;
+  }
+
+  &:focus {
+    @include box-shadow(4);
+    outline: none;
+    background: lighten($pastel-blue, 8%);
+    transform: scale(1.03);
+  }
+}
