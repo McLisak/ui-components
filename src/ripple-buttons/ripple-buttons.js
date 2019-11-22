@@ -1,6 +1,6 @@
 import './style.scss';
 
-const masterClassName = 'hover-ripple';
+const masterClassName = 'btn-ripple';
 const rippleHoverClassName = 'ripple-hover';
 const rippleClickClassName = 'ripple-click';
 const rippleClassName = 'ripple';

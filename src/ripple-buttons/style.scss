@@ -1,20 +1,25 @@
 @import '../common';
 @import '../variables';
 
-.hover-ripple {
+$btn-bg: $teal;
+$btn-ripple-bg: $pastel-pink;
+$btn-click-bg: rgba(255, 255, 255, 0.3);
+
+.btn-ripple {
+  cursor: pointer;
+  background: $teal;
   display: block;
   position: relative;
   font-size: 20px;
   padding: 0.8em;
-  background: $pastel-blue;
   color: white;
   text-decoration: none;
   @include box-shadow(2);
   overflow: hidden;
   z-index: 1;
   margin: 7.5px;
-  text-shadow: 1px 2px 3px rgba(0, 0, 0, 0.5);
   transition: transform 50ms ease-out;
+  @include text-shadow();
 
   > .ripple {
     position: absolute;
@@ -29,21 +34,20 @@
   }
   .ripple-hover {
     transition: transform 200ms ease-out;
-    background: $pastel-pink;
-    box-shadow: 0 0 10px 5px $pastel-pink;
+    background: $btn-ripple-bg;
+    box-shadow: 0 0 10px 5px $btn-ripple-bg;
   }
   .ripple-click {
-    $background: rgba(255, 255, 255, 0.3);
     opacity: 1;
     transition: transform 200ms ease-out, opacity 500ms ease-in;
-    background: $background;
-    box-shadow: 0 0 10px 5px $background;
+    background: $btn-click-bg;
+    box-shadow: 0 0 10px 5px $btn-click-bg;
   }
 
   &:focus {
     @include box-shadow(4);
     outline: none;
-    background: lighten($pastel-blue, 8%);
+    background: lighten($btn-bg, 8%);
     transform: scale(1.03);
   }
 }

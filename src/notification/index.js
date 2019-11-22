@@ -1,13 +1,19 @@
 import { Notifications } from './notifications';
+import { RippleButtons } from '../ripple-buttons/ripple-buttons';
 
-const notifications = window.notifications = new Notifications();
+RippleButtons.init();
+
+const notifications = (window.notifications = new Notifications());
 notifications.on('busy-change', (isBusy) => console.log('isBusy', isBusy));
 notifications.on('add', (notification) => console.log('add', notification));
 notifications.on('remove', (notification) => console.log('remove', notification));
 notifications.on('dismiss', (notification) => console.log('dismiss', notification));
 
 notifications.add(`Greetings notification! :)`, null);
-notifications.add(`Greetings notification2! :) i will not be dismissed automatically. You have to press the X button to close me :)`, null);
+notifications.add(
+  `Greetings notification2! :) i will not be dismissed automatically. You have to press the X button to close me :)`,
+  null
+);
 setTimeout(() => notifications.add(`New notification incoming`, null), 1000);
 // setTimeout(() => notifications.add(`Another notification incoming`, 10000), 3000);
 
